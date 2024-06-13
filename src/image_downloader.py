@@ -1,11 +1,11 @@
 import requests
 
 def check_image_available(url):
-    response = requests.head(url)
+    response = requests.head(url, verify=False)
     return response.status_code == 200
 
 def download_and_save_map(url, file_path):
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
     if response.status_code == 200:
         with open(file_path, 'wb') as f:
             f.write(response.content)

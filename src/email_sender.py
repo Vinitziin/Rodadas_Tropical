@@ -24,15 +24,9 @@ def send_email_with_comparison(previous_map_path, current_map_path, to_email, ho
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Comparação de Mapas</title>
         <style>
-            .map-container {{
-                display: flex;
-                justify-content: space-between;
-            }}
-            .map {{
-                width: 48%;
-            }}
             .business-card {{
                 display: flex;
+                flex-direction: column;
                 border-radius: 5px;
                 padding: 20px;
                 font-family: Arial, sans-serif;
@@ -57,17 +51,19 @@ def send_email_with_comparison(previous_map_path, current_map_path, to_email, ho
         </style>
         </head>
         <body>
-        <p>Novo mapa disponível:</p>
-        <div class="map-container">
-            <div class="map">
-                <p>Mapa anterior:</p>
-                <img src="cid:{previous_map_id[1:-1]}" alt="Mapa Anterior">
-            </div>
-            <div class="map">
-                <p>Mapa atual:</p>
-                <img src="cid:{current_map_id[1:-1]}" alt="Mapa Atual">
-            </div>
-        </div>
+        <p>Nova mapa disponível:</p>
+        <table width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+                <td width="50%" style="text-align: center;">
+                    <p>Mapa anterior:</p>
+                    <img src="cid:{previous_map_id[1:-1]}" alt="Mapa Anterior" style="width: 100%; height: auto;">
+                </td>
+                <td width="50%" style="text-align: center;">
+                    <p>Mapa atual:</p>
+                    <img src="cid:{current_map_id[1:-1]}" alt="Mapa Atual" style="width: 100%; height: auto;">
+                </td>
+            </tr>
+        </table>
         <div class="business-card">
             <div>
                 <img src="cid:{bar_id[1:-1]}" alt="">

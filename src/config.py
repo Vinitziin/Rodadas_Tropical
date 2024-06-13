@@ -10,7 +10,7 @@ with open('../env.json', 'r') as r:
     smtp_host = env['Smtp_config']['Smtp_host']
     smtp_port = env['Smtp_config']['Smtp_port']
 
-EMAIL_RECIPIENTS = ['vinicius.oliveira1@aes.com']
+EMAIL_RECIPIENTS = emails
 
 MAPS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'maps')
 EMAIL_SENDER = email_sender
