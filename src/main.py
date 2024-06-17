@@ -10,19 +10,18 @@ def main():
     to_email = config.EMAIL_RECIPIENTS
     sent_images = set()
     os.makedirs(config.MAPS_DIR, exist_ok=True)
-
-    while True:
+    
+    def verify_and_download_images():
         current_date = datetime.utcnow()
         date_str = current_date.strftime('%Y%m%d')
-
-        for i in range(len(hours)):
-            current_hour = hours[i]
+        
+        for current_hour in hours:
             if current_hour == "00":
                 previous_date = current_date - timedelta(days=1)
                 previous_hour = "18"
             else:
                 previous_date = current_date
-                previous_hour = hours[i - 1]
+                previous_hour = hours[hours.index(current_hour) - 1]
                 
             identifier = f"{date_str}_{current_hour}"
             
@@ -38,16 +37,28 @@ def main():
                         send_email_with_comparison(previous_map_path, current_map_path, to_email, current_hour, config)
                         print(f"Comparação de mapas enviada: {previous_url} vs {current_url}")
                     sent_images.add(identifier)
+                    return True
                 else:
-                    print(f"Mapa ainda indisponívael: {current_url}")
+                    print(f"Mapa ainda indisponível: {current_url}")
+                    
+        return False
 
-                time.sleep(60)
+    def wait_until_next_hour():
+        now = datetime.utcnow()
+        next_check_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+        time_to_wait = (next_check_time - now).total_seconds()
+        print(f"Aguardando até {next_check_time} UTC para a próxima verificação...")
+        time.sleep(time_to_wait)
 
-        new_date_str = datetime.utcnow().strftime("%Y%m%d")
-        if new_date_str != date_str:
-            sent_images.clear()
-
-        time.sleep(3600)
+    while True:
+        current_time = datetime.utcnow()
+        current_hour_str = current_time.strftime('%H')
+        if current_hour_str in hours:
+            while not verify_and_download_images():
+                print(f"Esperando 5 minutos antes de tentar novamente...")
+                time.sleep(300)  # Aguarda 5 minutos 
+        else:
+            wait_until_next_hour()
 
 if __name__ == "__main__":
     main()
