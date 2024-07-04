@@ -7,7 +7,7 @@ from email.utils import make_msgid
 import os
 from datetime import date
 
-def send_email_with_comparison(previous_map_path, current_map_path, to_email, hour, config):
+def enviar_email_comparacao(previous_map_path, current_map_path, to_email, hour, config):
     msg = MIMEMultipart('related')
     msg['To'] = ", ".join(to_email)
     msg['Subject'] = f"Comparação de mapas: GFS {hour}z - {date.today().strftime('%d/%m/%Y')}"
