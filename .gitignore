@@ -3,4 +3,4 @@ signature
 .vscode
 env.json
 data
-src\__pycache__
+__pycache__
