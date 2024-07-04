@@ -2,63 +2,55 @@ from datetime import datetime, timedelta
 import os
 import time
 import config
-from image_downloader import check_image_available, download_and_save_map, build_url
-from email_sender import send_email_with_comparison
+from image_downloader import verificar_imagem_disponivel, baixar_e_salvar_imagem, construir_url
+from email_sender import enviar_email_comparacao
 
 def main():
-    hours = ["00", "06", "12", "18"]
-    to_email = config.EMAIL_RECIPIENTS
-    sent_images = set()
+    horas = ["00", "06", "12", "18"]
+    emails_destino = config.EMAIL_RECIPIENTS
+    imagens_enviadas = set()
     os.makedirs(config.MAPS_DIR, exist_ok=True)
-    
-    def verify_and_download_images():
-        current_date = datetime.utcnow()
-        date_str = current_date.strftime('%Y%m%d')
-        
-        for current_hour in hours:
-            if current_hour == "00":
-                previous_date = current_date - timedelta(days=1)
-                previous_hour = "18"
-            else:
-                previous_date = current_date
-                previous_hour = hours[hours.index(current_hour) - 1]
-                
-            identifier = f"{date_str}_{current_hour}"
-            
-            if identifier not in sent_images:
-                current_url = build_url(current_date, current_hour)
-                previous_url = build_url(previous_date, previous_hour)
-                
-                current_map_path = os.path.join(config.MAPS_DIR, f"map_{date_str}_{current_hour}.png")
-                previous_map_path = os.path.join(config.MAPS_DIR, f"map_{previous_date.strftime('%Y%m%d')}_{previous_hour}.png")
-                
-                if check_image_available(current_url) and download_and_save_map(current_url, current_map_path):
-                    if os.path.exists(previous_map_path) or (check_image_available(previous_url) and download_and_save_map(previous_url, previous_map_path)):
-                        send_email_with_comparison(previous_map_path, current_map_path, to_email, current_hour, config)
-                        print(f"Comparação de mapas enviada: {previous_url} vs {current_url}")
-                    sent_images.add(identifier)
-                    return True
-                else:
-                    print(f"Mapa ainda indisponível: {current_url}")
-                    
-        return False
 
-    def wait_until_next_hour():
-        now = datetime.utcnow()
-        next_check_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
-        time_to_wait = (next_check_time - now).total_seconds()
-        print(f"Aguardando até {next_check_time} UTC para a próxima verificação...")
-        time.sleep(time_to_wait)
+    def verificar_e_baixar_imagem(data, hora):
+        data_str = data.strftime('%Y%m%d')
+        caminho_imagem_atual = os.path.join(config.MAPS_DIR, f"map_{data_str}_{hora}.png")
+        if not os.path.exists(caminho_imagem_atual):
+            url_atual = construir_url(data, hora)
+            if verificar_imagem_disponivel(url_atual) and baixar_e_salvar_imagem(url_atual, caminho_imagem_atual):
+                return caminho_imagem_atual
+            else:
+                print(f"Mapa ainda indisponível: {url_atual}")
+                return None
+        else:
+            print(f"Mapa já existe: {caminho_imagem_atual}")
+            return None  # Retorna None se o mapa já existe
+
+    def enviar_email_comparacao_mapa(data_atual, hora_atual):
+        if hora_atual == "00":
+            data_anterior = data_atual - timedelta(days=1)
+            hora_anterior = "18"
+        else:
+            data_anterior = data_atual
+            hora_anterior = horas[horas.index(hora_atual) - 1]
+
+        caminho_imagem_atual = verificar_e_baixar_imagem(data_atual, hora_atual)
+        if not caminho_imagem_atual:
+            return  # Não envia o email se o mapa atual já existe
+
+        caminho_imagem_anterior = os.path.join(config.MAPS_DIR, f"map_{data_anterior.strftime('%Y%m%d')}_{hora_anterior}.png")
+
+        if os.path.exists(caminho_imagem_anterior):
+            identificador = f"{data_atual.strftime('%Y%m%d')}_{hora_atual}"
+            if identificador not in imagens_enviadas:
+                enviar_email_comparacao(caminho_imagem_anterior, caminho_imagem_atual, emails_destino, hora_atual, config)
+                print(f"Comparação de mapas enviada: {caminho_imagem_anterior} vs {caminho_imagem_atual}")
+                imagens_enviadas.add(identificador)
 
     while True:
-        current_time = datetime.utcnow()
-        current_hour_str = current_time.strftime('%H')
-        if current_hour_str in hours:
-            while not verify_and_download_images():
-                print(f"Esperando 5 minutos antes de tentar novamente...")
-                time.sleep(300)  # Aguarda 5 minutos 
-        else:
-            wait_until_next_hour()
+        for hora in horas:
+            enviar_email_comparacao_mapa(datetime.utcnow(), hora)
+        print(f"Aguardando 5 minutos antes da próxima tentativa...")
+        time.sleep(300)  # Aguarda 5 minutos antes de tentar novamente
 
 if __name__ == "__main__":
     main()
