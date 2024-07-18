@@ -6,12 +6,28 @@ from image_downloader import verificar_imagem_disponivel, baixar_e_salvar_imagem
 from email_sender import enviar_email_comparacao
 
 def main():
+    """
+    Função principal que executa o processo de verificação e envio de emails de comparação de mapas.
+
+    Verifica se os mapas das horas especificadas estão disponíveis, baixa e salva as imagens,
+    e envia um email de comparação se o mapa atual e o mapa anterior estiverem disponíveis.
+    """
     horas = ["00", "06", "12", "18"]
     emails_destino = config.EMAIL_RECIPIENTS
     imagens_enviadas = set()
     os.makedirs(config.MAPS_DIR, exist_ok=True)
 
     def verificar_e_baixar_imagem(data, hora):
+        """
+        Verifica se a imagem do mapa está disponível e baixa se ainda não existir localmente.
+
+        Args:
+            data (datetime): A data para a qual verificar e baixar a imagem.
+            hora (str): A hora para a qual verificar e baixar a imagem.
+
+        Returns:
+            str: O caminho da imagem baixada se disponível e baixada com sucesso, caso contrário, None.
+        """
         data_str = data.strftime('%Y%m%d')
         caminho_imagem_atual = os.path.join(config.MAPS_DIR, f"map_{data_str}_{hora}.png")
         if not os.path.exists(caminho_imagem_atual):
@@ -26,6 +42,16 @@ def main():
             return None  # Retorna None se o mapa já existe
 
     def enviar_email_comparacao_mapa(data_atual, hora_atual):
+        """
+        Envia um email de comparação de mapas se ambos, o mapa atual e o anterior, estiverem disponíveis.
+
+        Args:
+            data_atual (datetime): A data atual para a qual verificar e enviar a comparação.
+            hora_atual (str): A hora atual para a qual verificar e enviar a comparação.
+
+        Returns:
+            None
+        """
         if hora_atual == "00":
             data_anterior = data_atual - timedelta(days=1)
             hora_anterior = "18"

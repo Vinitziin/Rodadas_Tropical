@@ -8,6 +8,19 @@ import os
 from datetime import date
 
 def enviar_email_comparacao(previous_map_path, current_map_path, to_email, hour, config):
+    """
+    Envia um email comparando dois mapas (anterior e atual) para os destinatários especificados.
+
+    Args:
+        previous_map_path (str): Caminho para o mapa anterior.
+        current_map_path (str): Caminho para o mapa atual.
+        to_email (list): Lista de endereços de email dos destinatários.
+        hour (str): Hora da geração dos mapas.
+        config (module): Módulo de configuração contendo as informações de SMTP e email.
+    
+    Returns:
+        None
+    """
     msg = MIMEMultipart('related')
     msg['To'] = ", ".join(to_email)
     msg['Subject'] = f"Comparação de mapas: GFS {hour}z - {date.today().strftime('%d/%m/%Y')}"
