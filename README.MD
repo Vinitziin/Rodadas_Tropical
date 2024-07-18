@@ -17,7 +17,7 @@ Este projeto automatiza o processo de verificação, download e envio de emails 
   - [email_sender.py](#emailsenderpy)
   - [image_downloader.py](#imagedownloaderpy)
   - [main.py](#mainpy)
-- [Licença](#licença)
+
 
 ## Introdução
 
